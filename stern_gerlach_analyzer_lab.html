@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stern–Gerlach Analyzer Lab</title>
+<style>
+:root{--bg:#0b1020;--panel:#141d32;--panel2:#1a2740;--ink:#edf3ff;--muted:#a9b8d3;--line:#34445f;--blue:#69b7ff;--orange:#ffb35c;--green:#6de0bd;--red:#ff7d91}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#172744 0,#0b1020 58%);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1200px;margin:auto;padding:24px 18px 40px}h1{font-size:clamp(1.7rem,3vw,2.5rem);margin:0 0 5px;letter-spacing:-.03em}.sub{color:var(--muted);margin:0 0 22px}.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(290px,1fr);gap:16px}.panel{background:linear-gradient(145deg,rgba(25,37,61,.97),rgba(17,26,44,.97));border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 10px 28px #0002}.panel h2{font-size:1.05rem;margin:0 0 12px}.visual{grid-column:1 / -1}.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label,.smalllabel{font-size:.82rem;color:var(--muted)}select,input[type=number],input[type=range]{width:100%}select,input[type=number]{background:#0e1729;color:var(--ink);border:1px solid #40516e;border-radius:8px;padding:9px;font:inherit}input[type=range]{accent-color:var(--blue)}.rangeval{color:var(--blue);font-variant-numeric:tabular-nums}.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}button{border:1px solid #476080;border-radius:9px;padding:10px 13px;background:#233654;color:var(--ink);font:600 .9rem system-ui;cursor:pointer}button.primary{background:#2564a9;border-color:#4a9ae9}button:hover{filter:brightness(1.15)}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}.stagebar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.8rem}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.canvaswrap{overflow-x:auto;border:1px solid #293b57;border-radius:12px;background:#0b1424}svg{display:block;width:100%;min-width:660px;height:auto}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.stat{background:#0e1729;border:1px solid #293b57;border-radius:10px;padding:11px}.stat .n{font-size:1.5rem;font-weight:750;font-variant-numeric:tabular-nums}.stat .l{font-size:.77rem;color:var(--muted)}.plus{color:var(--blue)}.minus{color:var(--orange)}.muted{color:var(--muted)}.analyzers{display:grid;gap:10px}.analyzer{border:1px solid var(--line);border-radius:12px;padding:12px;background:#101a2d}.analyzerhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.pill{font-size:.72rem;color:#c6d8f5;border:1px solid #415574;border-radius:99px;padding:3px 7px}.analyzer .controls{grid-template-columns:1fr 1fr}.analyzer.disabled{opacity:.48}.note{font-size:.82rem;color:var(--muted);margin:10px 0 0}.results{display:grid;gap:10px}.resultrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.bar{height:9px;background:#0a1220;border-radius:9px;overflow:hidden;margin-top:5px}.bar span{display:block;height:100%;border-radius:9px}.bar.plusbar span{background:var(--blue)}.bar.minusbar span{background:var(--orange)}.sectionlabel{font-size:.77rem;text-transform:uppercase;letter-spacing:.08em;color:#91a6c7;margin:14px 0 8px}.explain{font-size:.9rem;color:#d2def1}.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#0a1425;border:1px solid #293b57;border-radius:8px;padding:10px;overflow-wrap:anywhere}.footer{margin-top:16px;color:var(--muted);font-size:.78rem}@media(max-width:800px){.layout{grid-template-columns:1fr}.visual{grid-column:auto}.controls{grid-template-columns:1fr 1fr}}@media(max-width:460px){main{padding:16px 10px}.controls{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr 1fr}.panel{padding:13px}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Stern–Gerlach Analyzer Lab</h1>
+  <p class="sub">A hands-on quantum spin experiment with silver atoms (spin ½). Rotate analyzers, select beam paths, and compare measured counts.</p>
+  <div class="layout">
+    <section class="panel visual">
+      <div class="stagebar"><h2>Beamline visualization</h2><div class="legend"><span><i class="dot" style="background:var(--blue)"></i>+ channel</span><span><i class="dot" style="background:var(--orange)"></i>− channel</span><span><i class="dot" style="background:var(--green)"></i>unmeasured beam</span></div></div>
+      <div class="canvaswrap"><svg id="beamSvg" viewBox="0 0 1000 300" role="img" aria-label="Animated diagram of silver atoms passing through up to three Stern–Gerlach analyzers"></svg></div>
+      <div class="stats">
+        <div class="stat"><div class="n" id="nIn">1000</div><div class="l">Atoms entering</div></div>
+        <div class="stat"><div class="n plus" id="nPlus">—</div><div class="l">Final + channel</div></div>
+        <div class="stat"><div class="n minus" id="nMinus">—</div><div class="l">Final − channel</div></div>
+      </div>
+      <p class="note" id="flowNote">Configure the source and analyzers, then run the experiment.</p>
+    </section>
+    <section class="panel">
+      <h2>Atom source</h2>
+      <div class="controls">
+        <div class="field"><label for="orientation">Initial spin preparation</label><select id="orientation"><option value="z+">+z polarized</option><option value="z-">−z polarized</option><option value="x+">+x polarized</option><option value="x-">−x polarized</option><option value="random">Unpolarized / random</option></select></div>
+        <div class="field"><label for="atomCount">Number of silver atoms</label><input id="atomCount" type="number" min="10" max="100000" step="10" value="1000"></div>
+      </div>
+      <div class="sectionlabel">Source model</div>
+      <p class="explain">Silver atoms are treated as spin-½ particles. Each analyzer measures spin along its chosen axis and separates atoms into + or − output channels. For a spin eigenstate, the probability of + along an axis at angle θ is \(P(+)=\cos^2(θ/2)\).</p>
+      <div class="btnrow"><button class="primary" id="runBtn">▶ Run experiment</button><button id="resetBtn">Reset</button><button id="sampleBtn">New random sample</button></div>
+    </section>
+    <section class="panel">
+      <h2>Analyzer chain</h2>
+      <p class="note" style="margin-top:-4px;margin-bottom:12px">Use one, two, or three analyzers. Each later analyzer can receive the + or − output of the previous analyzer.</p>
+      <div class="analyzers" id="analyzers"></div>
+    </section>
+    <section class="panel">
+      <h2>Measurement results</h2>
+      <div id="resultArea" class="results"><p class="muted">Run the experiment to see the number and fraction of atoms in each output channel.</p></div>
+      <div class="sectionlabel">How to read this</div>
+      <p class="explain" id="interpretation">An analyzer oriented along z measures spin along z. Rotating it changes the probabilities of the two possible outcomes.</p>
+      <div class="sectionlabel">Quantum probability</div>
+      <div class="formula" id="formula">P(+ at next analyzer) = cos²(Δθ / 2)</div>
+    </section>
+  </div>
+  <p class="footer">Model note: this is a teaching simulation. Each atom is sampled probabilistically; finite atom counts can produce small statistical deviations from ideal probabilities. The diagram is schematic, not to scale.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const AXES=[{v:'z',label:'z axis'},{v:'x',label:'x axis'},{v:'y',label:'y axis'}];
+let config=[
+ {enabled:true,angle:0,input:'all'},
+ {enabled:false,angle:0,input:'plus'},
+ {enabled:false,angle:0,input:'plus'}
+];
+let lastRun=null;
+function makeAnalyzers(){
+ const root=$('analyzers');root.innerHTML='';
+ config.forEach((a,i)=>{
+  const div=document.createElement('div');div.className='analyzer'+(a.enabled?'':' disabled');
+  div.innerHTML=`<div class="analyzerhead"><strong>Analyzer ${i+1}</strong><label style="font-size:.82rem"><input type="checkbox" data-i="${i}" data-k="enabled" ${a.enabled?'checked':''}> Enabled</label></div>
+  <div class="controls">
+   <div class="field"><label for="angle${i}">Rotation angle (from +z)</label><input id="angle${i}" data-i="${i}" data-k="angle" type="range" min="0" max="180" step="1" value="${a.angle}" ${a.enabled?'':'disabled'}><span class="rangeval" id="angleVal${i}">${a.angle}°</span></div>
+   <div class="field"><label for="input${i}">${i===0?'Atoms entering':`Input from analyzer ${i}`}</label><select id="input${i}" data-i="${i}" data-k="input" ${i===0||!a.enabled?'disabled':''}>${i===0?'<option value="all">Full source beam</option>':`<option value="plus" ${a.input==='plus'?'selected':''}>Previous + channel</option><option value="minus" ${a.input==='minus'?'selected':''}>Previous − channel</option>`}</select></div>
+  </div>`;
+  root.appendChild(div);
+ });
+ root.querySelectorAll('[data-k]').forEach(el=>el.addEventListener('input',e=>{
+  const i=+e.target.dataset.i,k=e.target.dataset.k;
+  config[i][k]=k==='enabled'?e.target.checked:k==='angle'?+e.target.value:e.target.value;
+  if(k==='enabled') makeAnalyzers(); else {if(k==='angle') $('angleVal'+i).textContent=e.target.value+'°'; drawBeam(); }
+  lastRun=null; $('resultArea').innerHTML='<p class="muted">Settings changed. Run the experiment to update the results.</p>';
+ }));
+}
+function axisVec(angle){let r=angle*Math.PI/180;return [Math.sin(r),0,Math.cos(r)];}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]}
+function rand(){return Math.random()}
+function choose(p){return rand()<Math.max(0,Math.min(1,p))?1:-1}
+function initialSpin(kind){
+ if(kind==='random'){let z=rand()*2-1,phi=rand()*Math.PI*2,s=Math.sqrt(1-z*z);return [s*Math.cos(phi),s*Math.sin(phi),z]}
+ if(kind==='z+')return [0,0,1];if(kind==='z-')return [0,0,-1];
+ if(kind==='x+')return [1,0,0];return [-1,0,0]
+}
+function runExperiment(){
+ const N=Math.max(10,Math.min(100000,parseInt($('atomCount').value)||1000));$('atomCount').value=N;
+ const active=config.map((a,i)=>({...a,index:i})).filter(a=>a.enabled);
+ const states=Array.from({length:N},()=>({spin:initialSpin($('orientation').value),alive:true,channel:0}));
+ const records=[];
+ active.forEach((a,step)=>{
+  const idx=a.index,axis=axisVec(a.angle);
+  let incoming=0,plus=0,minus=0;
+  states.forEach(s=>{
+   if(!s.alive)return;
+   if(step>0 && a.input!=='all' && s.channel!==(a.input==='plus'?1:-1)) {s.alive=false;return}
+   incoming++;
+   const p=(1+dot(s.spin,axis))/2;
+   const outcome=choose(p);
+   s.spin=axis.map(v=>v*outcome);s.channel=outcome;
+   if(outcome===1)plus++;else minus++;
+  });
+  records.push({idx,angle:a.angle,incoming,plus,minus,input:a.input});
+ });
+ let survivors=states.filter(s=>s.alive),plus=survivors.filter(s=>s.channel===1).length,minus=survivors.filter(s=>s.channel===-1).length;
+ if(!active.length){plus=0;minus=0}
+ lastRun={N,records,plus,minus,survivors:survivors.length};
+ renderResults(lastRun);drawBeam();
+ $('flowNote').textContent=active.length?`Simulated ${N.toLocaleString()} atoms through ${active.length} active analyzer${active.length===1?'':'s'}. Later analyzers only receive the selected channel.`:'No analyzers are enabled, so no spin measurement has been made.';
+}
+function renderResults(r){
+ let html=`<div class="resultrow"><span>Atoms entering source</span><strong>${r.N.toLocaleString()}</strong></div>`;
+ r.records.forEach((x,j)=>{
+  html+=`<div class="sectionlabel">Analyzer ${x.idx+1} · ${x.angle}° from +z</div>
+  <div class="resultrow"><span>Atoms entering this analyzer</span><strong>${x.incoming.toLocaleString()}</strong></div>
+  <div class="resultrow"><span class="plus">+ channel</span><strong>${x.plus.toLocaleString()} (${x.incoming?(100*x.plus/x.incoming).toFixed(1):'0.0'}%)</strong></div><div class="bar plusbar"><span style="width:${x.incoming?100*x.plus/x.incoming:0}%"></span></div>
+  <div class="resultrow"><span class="minus">− channel</span><strong>${x.minus.toLocaleString()} (${x.incoming?(100*x.minus/x.incoming).toFixed(1):'0.0'}%)</strong></div><div class="bar minusbar"><span style="width:${x.incoming?100*x.minus/x.incoming:0}%"></span></div>`;
+ });
+ html+=`<div class="sectionlabel">Final selected output</div><div class="resultrow"><span class="plus">Final + channel</span><strong>${r.plus.toLocaleString()}</strong></div><div class="resultrow"><span class="minus">Final − channel</span><strong>${r.minus.toLocaleString()}</strong></div>`;
+ $('resultArea').innerHTML=html;$('nIn').textContent=r.N.toLocaleString();$('nPlus').textContent=r.plus.toLocaleString();$('nMinus').textContent=r.minus.toLocaleString();
+ const active=config.filter(a=>a.enabled);
+ if(active.length>=2){let a=active[active.length-2],b=active[active.length-1],delta=Math.abs(a.angle-b.angle);delta=Math.min(delta,180-delta);$('formula').textContent=`For successive selected spin states: P(same-axis +) = cos²(Δθ / 2), Δθ = ${delta}°; P = ${(Math.cos(delta*Math.PI/360)**2).toFixed(3)} (for a + eigenstate entering the next analyzer).`;$('interpretation').textContent=`Analyzer ${active.length-1} prepares atoms in its selected spin eigenstate. Analyzer ${active.length} measures along a different axis, so outcomes are probabilistic; the input selector determines which earlier branch is sent onward.`}
+ else {$('formula').textContent='P(+ along analyzer axis) = (1 + s · n) / 2';$('interpretation').textContent=$('orientation').selectedOptions[0].textContent+' atoms enter the first enabled analyzer. A spin measurement yields either + or − along that analyzer’s axis.'}
+}
+function drawBeam(){
+ const svg=$('beamSvg'),W=1000,H=300;
+ let active=config.map((a,i)=>({...a,index:i})).filter(a=>a.enabled);
+ let xs=[190,470,750],sourceX=55,mid=150;
+ let s=`<defs><filter id="glow"><feGaussianBlur stdDeviation="2.3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+ s+=`<rect x="15" y="20" width="970" height="260" rx="12" fill="#0b1424"/>`;
+ s+=`<text x="45" y="42" fill="#a9b8d3" font-size="13">SILVER ATOM SOURCE</text><rect x="45" y="120" width="68" height="60" rx="8" fill="#273c59" stroke="#54708f"/><text x="79" y="145" text-anchor="middle" fill="#edf3ff" font-size="12">Ag</text><text x="79" y="162" text-anchor="middle" fill="#a9b8d3" font-size="10">spin ½</text>`;
+ s+=`<path d="M113 150 H${xs[0]-25}" stroke="#6de0bd" stroke-width="3" fill="none" stroke-dasharray="5 5"/>`;
+ for(let i=0;i<3;i++){
+  const a=config[i],x=xs[i],enabled=a.enabled;
+  s+=`<line x1="${x}" y1="55" x2="${x}" y2="245" stroke="${enabled?'#6985ad':'#3b4960'}" stroke-width="2" stroke-dasharray="5 5"/>`;
+  s+=`<rect x="${x-38}" y="66" width="76" height="42" rx="8" fill="${enabled?'#234c76':'#1a2639'}" stroke="${enabled?'#69b7ff':'#3b4960'}"/><text x="${x}" y="83" text-anchor="middle" fill="#edf3ff" font-size="11">SGA ${i+1}</text><text x="${x}" y="98" text-anchor="middle" fill="#a9b8d3" font-size="10">${enabled?a.angle+'°':'off'}</text>`;
+  if(enabled){
+   s+=`<path d="M${x} 150 L${x+58} 111" stroke="#69b7ff" stroke-width="2" fill="none"/><path d="M${x} 150 L${x+58} 190" stroke="#ffb35c" stroke-width="2" fill="none"/>`;
+   s+=`<text x="${x+20}" y="119" fill="#69b7ff" font-size="14">+</text><text x="${x+20}" y="190" fill="#ffb35c" font-size="14">−</text>`;
+  }
+ }
+ // Schematic routes based on enabled analyzers and selected channel links
+ if(!active.length){s+=`<path d="M113 150 H925" stroke="#6de0bd" stroke-width="3" stroke-dasharray="7 6"/><text x="820" y="138" fill="#6de0bd" font-size="13">Unmeasured beam</text>`}
+ else{
+  let prevX=113,baseY=150;
+  active.forEach((a,j)=>{
+   const x=xs[a.index],sel=j===0?'all':a.input;
+   if(j>0){const prev=active[j-1];baseY+=(sel==='minus'?40:-40);s+=`<path d="M${xs[prev.index]+58} ${baseY} H${x-42}" stroke="${sel==='minus'?'#ffb35c':'#69b7ff'}" stroke-width="3" fill="none" stroke-dasharray="5 4"/>`}
+   else s+=`<path d="M${prevX} 150 H${x-42}" stroke="#6de0bd" stroke-width="3" fill="none" stroke-dasharray="5 4"/>`;
+   if(j===active.length-1){
+    const y1=baseY-40,y2=baseY+40;
+    s+=`<path d="M${x+58} ${baseY} L${x+100} ${y1} H945" stroke="#69b7ff" stroke-width="3" fill="none"/><path d="M${x+58} ${baseY} L${x+100} ${y2} H945" stroke="#ffb35c" stroke-width="3" fill="none"/>`;
+    s+=`<text x="950" y="${y1-7}" text-anchor="end" fill="#69b7ff" font-size="13">+ output</text><text x="950" y="${y2+18}" text-anchor="end" fill="#ffb35c" font-size="13">− output</text>`;
+   }
+  });
+ }
+ s+=`<text x="35" y="265" fill="#7186a8" font-size="11">SCHEMATIC • selected branch continues to the next analyzer</text>`;
+ svg.innerHTML=s;
+}
+$('runBtn').addEventListener('click',runExperiment);
+$('resetBtn').addEventListener('click',()=>{config=[{enabled:true,angle:0,input:'all'},{enabled:false,angle:0,input:'plus'},{enabled:false,angle:0,input:'plus'}];$('orientation').value='z+';$('atomCount').value=1000;makeAnalyzers();lastRun=null;$('resultArea').innerHTML='<p class="muted">Run the experiment to see the number and fraction of atoms in each output channel.</p>';$('nIn').textContent='1000';$('nPlus').textContent='—';$('nMinus').textContent='—';$('flowNote').textContent='Configure the source and analyzers, then run the experiment.';drawBeam()});
+$('sampleBtn').addEventListener('click',()=>{if(lastRun)runExperiment();else {const orientations=['z+','z-','x+','x-','random'];$('orientation').value=orientations[Math.floor(Math.random()*orientations.length)];runExperiment()}});
+$('orientation').addEventListener('change',()=>{lastRun=null;$('resultArea').innerHTML='<p class="muted">Source changed. Run the experiment to update the results.</p>'});
+makeAnalyzers();drawBeam();
+</script>
+</body>
+</html>
